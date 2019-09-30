@@ -1,0 +1,11 @@
+{
+    "name": "Itch.io integration",
+    "platform": "itch",
+    "guid": "fd0effe6-77d9-42bc-999d-a5a5c870c2a4",
+    "version": "0.1",
+    "description": "Itch integration",
+    "author": "David Eichelsdörfer",
+    "email": "david.mysi@gmail.com",
+    "url": "",
+    "script": "itch.py"
+}
