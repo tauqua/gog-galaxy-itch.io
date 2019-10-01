@@ -7,3 +7,6 @@ Please use the download [via the releases page](https://github.com/Ertego/gog-ga
 Also please note that you have to have the itch launcher installed at the default location!
 
 Also feel free to create an issue if something doesn't work for you :)
+
+# Screenshots:
+![Screenshot of the integration](https://i.imgur.com/1ZudmRy.png)
