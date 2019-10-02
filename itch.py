@@ -20,9 +20,6 @@ ITCH_DB_PATH = os.path.join(os.getenv("appdata"), "itch/db/butler.db")
 
 class ItchIntegration(Plugin):
     async def get_owned_games(self) -> List[Game]:
-        if not self.authenticated:
-            raise AuthenticationRequired()
-
         return await self.get_games()
 
     async def get_games(self):
@@ -125,7 +122,7 @@ class ItchIntegration(Plugin):
 
     # implement methods
     async def authenticate(self, stored_credentials=None):
-        if (not (stored_credentials.get("access_token") if stored_credentials else None)) or True:
+        if not (stored_credentials.get("access_token") if stored_credentials else None):
             return NextStep("web_session", {
                 "window_title": "Log in to Itch.io",
                 "window_width": 536,
