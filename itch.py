@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 import sqlite3
 import subprocess
@@ -23,17 +24,22 @@ class ItchIntegration(Plugin):
         return await self.get_games()
 
     async def get_games(self):
-        log(ITCH_DB_PATH)
+        logging.debug("Opening connection to itch butler.db")
         self.itch_db = sqlite3.connect(ITCH_DB_PATH)
         self.itch_db_cursor = self.itch_db.cursor()
         resp = list(self.itch_db_cursor.execute("SELECT * FROM games"))
         downloaded = [x[0] for x in list(self.itch_db_cursor.execute("SELECT game_id FROM downloads"))]
         self.itch_db.close()
+        logging.debug("Closing connection to itch butler.db")
 
         games = []
 
+        logging.debug("Starting building games...")
+
         for game in resp:
+            logging.debug(f"Building game {game[0]} ({game[2]})")
             if game[0] not in downloaded:
+                logging.debug(f"Game {game[0]} ({game[2]}) seems to be only cached, skipping...")
                 continue
             can_be_bought = True if game[11] == 1 else False
             min_price = game[10]
@@ -41,8 +47,11 @@ class ItchIntegration(Plugin):
             if can_be_bought and min_price > 0:
                 license_type = LicenseType.SinglePurchase
             games.append(Game(game_id=game[0], game_title=game[2], dlcs=None, license_info=LicenseInfo(license_type)))
+            logging.debug(f"Built {game[0]} ({game[2]})")
 
         self.game_ids = [x.game_id for x in games]
+
+        logging.debug("Finished building games")
 
         return games
 
@@ -64,6 +73,7 @@ class ItchIntegration(Plugin):
         return Authentication(user["id"], user["username"])
 
     async def check_for_new_games(self):
+        logging.debug("Checking for changes in the itch butler.db")
         self.checking_for_new_games = True
         games_before = self.game_ids[:]
         games_after = await self.get_games()
@@ -71,12 +81,16 @@ class ItchIntegration(Plugin):
         for game in games_after:
             if game.game_id not in games_before:
                 self.add_game(game)
+                logging.debug(f"Game {game.game_id} ({game.game_title}) is new, adding to galaxy...")
 
         for game in games_before:
             if game not in ids_after:
                 self.remove_game(game)
+                logging.debug(f"Game {game} seems to be uninstalled, removing from galaxy...")
 
         self.checking_for_new_games = False
+
+        logging.debug("Finished checking for changes in the itch butler.db")
 
 
     def tick(self) -> None:
