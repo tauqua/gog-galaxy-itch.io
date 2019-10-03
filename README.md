@@ -8,5 +8,13 @@ Also please note that you have to have the itch launcher installed at the defaul
 
 Also feel free to create an issue if something doesn't work for you :)
 
+## Current Features
+* Show games installed through the itch client in Gog Galaxy 2
+* Launch games
+
+## Features planned to be added
+* Show (uninstalled) purchases in your library
+* Install purchased games
+
 # Screenshots:
 ![Screenshot of the integration](https://i.imgur.com/1ZudmRy.png)
