@@ -13,7 +13,7 @@ Also feel free to create an issue if something doesn't work for you :)
 * Launch games
 
 ## Features planned to be added
-* Show (uninstalled) purchases in your library
+* Show (not yet installed) purchases in your library
 * Install purchased games
 
 # Screenshots:
