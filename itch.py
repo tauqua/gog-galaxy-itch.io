@@ -129,16 +129,10 @@ class ItchIntegration(Plugin):
         self.push_cache()
 
     async def get_game_time(self, game_id: str, context: None) -> GameTime:
-        """Blep
-
-        :param game_id: the id of the game for which the game time is returned
-        :param context: the value returned from :meth:`prepare_game_times_context`
-        :return: GameTime object
-        """
         return GameTime(
             game_id=game_id,
-            time_played=None,#self._get_time_played(game_id),
-            last_played_time=None,#self._get_last_played_time(game_id),
+            time_played=None,
+            last_played_time=None,
         )
 
     def _get_time_played(self, game_id: str) -> Optional[int]:
