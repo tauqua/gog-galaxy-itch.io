@@ -113,7 +113,9 @@ class ItchIntegration(Plugin):
         self.itch_db.close()
 
         start = int(time.time())
-        subprocess.Popen(os.path.join(resp["basePath"], resp["candidates"][0]["path"]))
+        proc = await asyncio.create_subprocess_shell(os.path.join(resp["basePath"], resp["candidates"][0]["path"]))
+
+        await proc.communicate() # wait till terminates
         end = int(time.time())
 
         session_mins_played = int((end - start) / 60) # secs to mins
