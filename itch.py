@@ -5,16 +5,17 @@ import os
 import sqlite3
 import subprocess
 import sys
+import time
 import traceback
 import re
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 
 from galaxy.http import create_client_session
 
 from galaxy.api.errors import AccessDenied, InvalidCredentials, AuthenticationRequired
 from galaxy.api.plugin import Plugin, create_and_run_plugin
 from galaxy.api.consts import Platform, LicenseType, LocalGameState
-from galaxy.api.types import NextStep, Authentication, LocalGame, Game, LicenseInfo
+from galaxy.api.types import NextStep, Authentication, LocalGame, Game, LicenseInfo, GameTime
 
 ITCH_DB_PATH = os.path.join(os.getenv("appdata"), "itch/db/butler.db")
 
@@ -111,7 +112,48 @@ class ItchIntegration(Plugin):
         resp = json.loads(list(self.itch_db_cursor.execute("SELECT verdict FROM caves WHERE game_id=? LIMIT 1", [game_id]))[0][0])
         self.itch_db.close()
 
+        start = int(time.time())
         subprocess.Popen(os.path.join(resp["basePath"], resp["candidates"][0]["path"]))
+        end = int(time.time())
+
+        session_mins_played = int((end - start) / 60) # secs to mins
+        time_played = (self._get_time_played(game_id) or 0) + session_mins_played
+        game_time = GameTime(game_id=game_id, time_played=time_played, last_played_time=end)
+        self.update_game_time(game_time)
+
+        # store updated times
+        self.persistent_cache[self._time_played_key(game_id)] = str(time_played)
+        self.persistent_cache[self._last_played_time_key(game_id)] = str(end)
+        self.push_cache()
+
+    async def get_game_time(self, game_id: str, context: None) -> GameTime:
+        """Blep
+
+        :param game_id: the id of the game for which the game time is returned
+        :param context: the value returned from :meth:`prepare_game_times_context`
+        :return: GameTime object
+        """
+        return GameTime(
+            game_id=game_id,
+            time_played=None,#self._get_time_played(game_id),
+            last_played_time=None,#self._get_last_played_time(game_id),
+        )
+
+    def _get_time_played(self, game_id: str) -> Optional[int]:
+        key = self._time_played_key(game_id)
+        return int(self.persistent_cache[key]) if key in self.persistent_cache else None
+
+    def _get_last_played_time(self, game_id: str) -> Optional[int]:
+        key = self._last_played_time_key(game_id)
+        return int(self.persistent_cache[key]) if key in self.persistent_cache else None
+
+    @staticmethod
+    def _time_played_key(game_id: str) -> str:
+        return f'time{game_id}'
+
+    @staticmethod
+    def _last_played_time_key(game_id: str) -> str:
+        return f'last{game_id}'
 
     async def uninstall_game(self, game_id: str) -> None:
         pass
