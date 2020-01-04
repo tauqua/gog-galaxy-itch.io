@@ -29,7 +29,7 @@ class ItchIntegration(Plugin):
         self.itch_db = sqlite3.connect(ITCH_DB_PATH)
         self.itch_db_cursor = self.itch_db.cursor()
         resp = list(self.itch_db_cursor.execute("SELECT * FROM games"))
-        downloaded = [x[0] for x in list(self.itch_db_cursor.execute("SELECT game_id FROM downloads"))]
+        downloaded = [x[0] for x in list(self.itch_db_cursor.execute("SELECT game_id FROM caves"))]
         self.itch_db.close()
         logging.debug("Closing connection to itch butler.db")
 
