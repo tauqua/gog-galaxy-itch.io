@@ -18,7 +18,7 @@ Also feel free to create an issue if something doesn't work for you :)
 
 ## Installation
 1. Download the plugin from the releases page.
-2. Copy the downloaded ZIP to `%HOMEDRIVE%%HOMEPATH%\AppData\Local\GOG.com\Galaxy\plugins\installed`
+2. Copy the downloaded ZIP to `%LOCALAPPDATA%\AppData\Local\GOG.com\Galaxy\plugins\installed`
    which is the same location as `C:\Users\USER\AppData\Local\GOG.com\Galaxy\plugins\installed`, but the first one can be copy-pasted
 3. Unzip
 4. (Optional) Delete the zip to save space
