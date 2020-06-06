@@ -17,7 +17,10 @@ from galaxy.api.plugin import Plugin, create_and_run_plugin
 from galaxy.api.consts import Platform, LicenseType, LocalGameState
 from galaxy.api.types import NextStep, Authentication, LocalGame, Game, LicenseInfo, GameTime
 
-ITCH_DB_PATH = os.path.join(os.getenv("appdata"), "itch/db/butler.db")
+if sys.platform.startswith("darwin"):
+    ITCH_DB_PATH = os.path.expanduser("~/Library/Application Support/itch/db/butler.db")
+else:
+    ITCH_DB_PATH = os.path.join(os.getenv("appdata"), "itch/db/butler.db")
 
 
 class ItchIntegration(Plugin):
