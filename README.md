@@ -2,10 +2,7 @@
 
 An integration for itch.io
 
-Please use the download [via the releases page](https://github.com/Ertego/gog-galaxy-itch.io/releases) as the repo itself does not contain any dependencies.
-Also please note that you have to have the itch launcher installed at the default location!
-
-Also feel free to create an issue if something doesn't work for you :)
+Based heavily on [Ertego's itch.io integration](https://github.com/Ertego/gog-galaxy-itch.io) and [burnhamup's Indiegala integration](https://github.com/burnhamup/galaxy-integration-indiegala)
 
 ## Current Features
 * Show all purchases in library
@@ -14,6 +11,7 @@ Also feel free to create an issue if something doesn't work for you :)
 * Check local games
 * Install purchased games
 * Launch games
+* List designated collections as "Subscriptions" 
 
 ## Installation
 1. Download the plugin from the releases page.

@@ -2,9 +2,9 @@
     "name": "Itch.io integration",
     "platform": "itch",
     "guid": "fd0effe6-77d9-42bc-999d-a5a5c870c2a4",
-    "version": "0.3",
+    "version": "0.3.1",
     "description": "Itch integration",
-    "author": "David Eichelsdörfer",
+    "author": "David Eichelsdörfer, Tauqua",
     "email": "david.mysi@gmail.com",
     "url": "",
     "script": "itch.py"
