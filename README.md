@@ -6,6 +6,8 @@ Based heavily on [Ertego's itch.io integration](https://github.com/Ertego/gog-ga
 
 Please use the download via the releases page as the repo itself does not contain any dependencies. 
 
+Note that many games on Itch are not listed in IGDB and therefore will show up as "Unknown Game". You can help fix this by adding them on [igdb](https://www.igdb.com/)
+
 ## Current Features
 * Show all purchases in library
 

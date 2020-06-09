@@ -7,7 +7,7 @@ import os
 from typing import List, Dict, Union, Optional
 
 from galaxy.api.plugin import Plugin, create_and_run_plugin
-from galaxy.api.consts import Platform, LicenseType
+from galaxy.api.consts import Platform, LicenseType, OSCompatibility
 from galaxy.api.types import NextStep, Authentication, Game, LicenseInfo
 from galaxy.api.errors import AuthenticationRequired, AccessDenied, InvalidCredentials
 
@@ -15,14 +15,6 @@ from http_client import HTTPClient
 
 with open(Path(__file__).parent / 'manifest.json', 'r') as f:
     __version__ = json.load(f)['version']
-
-AUTH_PARAMS = {
-    "window_title": "Log in to Itch.io",
-    "window_width": 536,
-    "window_height": 675,
-    "start_uri": r"https://itch.io/user/oauth?client_id=9a47359f7cba449ace3ba257cfeebc17&scope=profile&response_type=token&redirect_uri=http%3A%2F%2F127.0.0.1%3A7157%2Fgogg2itchmatcher",
-    "end_uri_regex": r"^http://127\.0\.0\.1:7157/gogg2itchmatcher#access_token=.+",
-}
 
 KEYS_URL = 'https://api.itch.io/profile/owned-keys?page=%s'
 
@@ -52,8 +44,8 @@ class ItchIntegration(Plugin):
                 "window_title": "Log in to Itch.io",
                 "window_width": 536,
                 "window_height": 675,
-                "start_uri": r"https://itch.io/user/oauth?client_id=9a47359f7cba449ace3ba257cfeebc17&scope=profile&response_type=token&redirect_uri=http%3A%2F%2F127.0.0.1%3A7157%2Fgogg2itchmatcher",
-                "end_uri_regex": r"^http://127\.0\.0\.1:7157/gogg2itchmatcher#access_token=.+",
+                "start_uri": r"https://itch.io/user/oauth?client_id=3821cecdd58ae1a920be15f6aa479f7e&scope=profile&response_type=token&redirect_uri=http%3A%2F%2F127.0.0.1%3A7157%2Fgogg2itchintegration",
+                "end_uri_regex": r"^http://127\.0\.0\.1:7157/gogg2itchintegration#access_token=.+",
             })
         else:
             try:
@@ -68,7 +60,7 @@ class ItchIntegration(Plugin):
             Union[NextStep, Authentication]:
         session_cookies = {cookie['name']: cookie['value'] for cookie in cookies if cookie['name']}
         self.http_client.update_cookies(session_cookies)
-        api_key = re.search(r"^http://127\.0\.0\.1:7157/gogg2itchmatcher#access_token=(.+)", credentials["end_uri"])
+        api_key = re.search(r"^http://127\.0\.0\.1:7157/gogg2itchintegration#access_token=(.+)", credentials["end_uri"])
         key = api_key.group(1)
         self.store_credentials({"access_token": key})
 
@@ -102,15 +94,14 @@ class ItchIntegration(Plugin):
             if not game.get("classification") == "game":
                 continue
             game_name = game.get("title")
-            game_href = game.get("url")
-            url_slug = str(game_href.split('itch.io/')[-1])
-            logging.debug('Parsed %s, %s', game_name, url_slug)
-            games.append(Game(
-                game_id=url_slug,
+            game_num = game.get("id")
+            logging.debug('Parsed %s, %s', game_name, game_num)
+            this_game = Game(
+                game_id=game_num,
                 game_title=game_name,
                 license_info=LicenseInfo(LicenseType.SinglePurchase),
                 dlcs=[])
-            )
+            games.append(this_game)
 
 
 def main():
