@@ -11,6 +11,7 @@ Based heavily on [Ertego's itch.io integration](https://github.com/Ertego/gog-ga
 * Check local games
 * Install purchased games
 * Launch games
+* Read platform information
 * List designated collections as "Subscriptions" 
 
 ## Installation
