@@ -4,6 +4,8 @@ An integration for itch.io
 
 Based heavily on [Ertego's itch.io integration](https://github.com/Ertego/gog-galaxy-itch.io) and [burnhamup's Indiegala integration](https://github.com/burnhamup/galaxy-integration-indiegala)
 
+Please use the download via the releases page as the repo itself does not contain any dependencies. 
+
 ## Current Features
 * Show all purchases in library
 
@@ -21,5 +23,3 @@ Based heavily on [Ertego's itch.io integration](https://github.com/Ertego/gog-ga
 3. Unzip
 4. (Optional) Delete the zip to save space
 
-# Screenshots:
-![Screenshot of the integration](https://i.imgur.com/1ZudmRy.png)
