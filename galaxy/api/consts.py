@@ -90,6 +90,7 @@ class Platform(Enum):
     Playfire = "playfire"
     Oculus = "oculus"
     Test = "test"
+    Rockstar = "rockstar"
 
 
 class Feature(Enum):
@@ -111,6 +112,11 @@ class Feature(Enum):
     ShutdownPlatformClient = "ShutdownPlatformClient"
     LaunchPlatformClient = "LaunchPlatformClient"
     ImportGameLibrarySettings = "ImportGameLibrarySettings"
+    ImportOSCompatibility = "ImportOSCompatibility"
+    ImportUserPresence = "ImportUserPresence"
+    ImportLocalSize = "ImportLocalSize"
+    ImportSubscriptions = "ImportSubscriptions"
+    ImportSubscriptionGames = "ImportSubscriptionGames"
 
 
 class LicenseType(Enum):
@@ -129,3 +135,30 @@ class LocalGameState(Flag):
     None_ = 0
     Installed = 1
     Running = 2
+
+
+class OSCompatibility(Flag):
+    """Possible game OS compatibility.
+    Use "bitwise or" to express multiple OSs compatibility, e.g. ``os=OSCompatibility.Windows|OSCompatibility.MacOS``
+    """
+    Windows = 0b001
+    MacOS   = 0b010
+    Linux   = 0b100
+
+
+class PresenceState(Enum):
+    """"Possible states of a user."""
+    Unknown = "unknown"
+    Online = "online"
+    Offline = "offline"
+    Away = "away"
+
+
+class SubscriptionDiscovery(Flag):
+    """Possible capabilities which inform what methods of subscriptions ownership detection are supported.
+
+    :param AUTOMATIC: integration can retrieve the proper status of subscription ownership.
+    :param USER_ENABLED: integration can handle override of ~class::`Subscription.owned` value to True
+    """
+    AUTOMATIC = 1
+    USER_ENABLED = 2
