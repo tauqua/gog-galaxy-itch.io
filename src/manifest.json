@@ -2,7 +2,7 @@
     "name": "Itch.io integration",
     "platform": "itch",
     "guid": "2df02142-4d8a-4a4b-9b6e-c3a0bc62f93b",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Itch integration",
     "author": "Tauqua, based on David Eichelsdörfer",
     "email": "",

@@ -83,7 +83,7 @@ class ItchIntegration(Plugin):
         return games
 
     async def get_user_data(self, api_key):
-        resp = await self.http_client.get(f"https://itch.io/api/1/{api_key}/me")
+        resp = await self.http_client.get(f"https://api.itch.io/profile?")
         self.authenticated = True
         return resp.get("user")
 

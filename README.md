@@ -21,7 +21,6 @@ Note that many games on Itch are not listed in IGDB and therefore will show up a
 
 ## Known issues
 * Loses connection or can't connect upon restarting GOG (disconnect and reconnect to fix)
-* Authentication uses APIv1 which logs your API key in the local log. This will be fixed in the next release.
 
 ## Installation
 1. Download the plugin from the releases page.
