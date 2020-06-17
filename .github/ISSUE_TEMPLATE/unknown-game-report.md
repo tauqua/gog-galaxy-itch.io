@@ -11,6 +11,8 @@ A game is being imported as "Unknown Game" in GOG and therefore isn't showing up
 Since GOG maintains a database in order to prevent duplicates and merge games across platforms, games that do not appear in that database will show as "Unknown Game" in Galaxy. 
 Please fill in as many of these as you can, to help document and reproduce which games are not in the GOG database. Some of these pages may not exist.
 
+NOTE: This form is for information collection only. GOG's database is not publicly editable. I'm simply trying to collect information to better determine what information is missing from it and if any workarounds can be created. Submitting this issue will not result in the game appearing in GOG's database.
+
 Game title: 
 
 Itch.io link:
