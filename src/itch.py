@@ -72,7 +72,7 @@ class ItchIntegration(Plugin):
         games = []
         while True:
             try:
-                resp = await self.http_client.get(f"https://api.itch.io/profile/owned-keys?page={page}")
+                resp = await self.http_client.get(f"https://api.itch.io/profile/owned-keys?classification=game&page={page}")
             except AuthenticationRequired:
                 self.lost_authentication()
                 raise
