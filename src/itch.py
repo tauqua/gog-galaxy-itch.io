@@ -39,14 +39,15 @@ class ItchIntegration(Plugin):
     # implement methods
     async def authenticate(self, stored_credentials=None):
         logging.debug("authenticate")
+        confirmation_uri = 'https://itch.io/user/oauth?client_id=3821cecdd58ae1a920be15f6aa479f7e&scope=profile&response_type=token&redirect_uri=http%3A%2F%2F127.0.0.1%3A7157%2Fgogg2itchintegration'
         if not (stored_credentials.get("access_token") if stored_credentials else None):
             return NextStep("web_session", {
                 "window_title": "Log in to Itch.io",
                 "window_width": 536,
                 "window_height": 675,
-                "start_uri": r"https://itch.io/user/oauth?client_id=3821cecdd58ae1a920be15f6aa479f7e&scope=profile&response_type=token&redirect_uri=http%3A%2F%2F127.0.0.1%3A7157%2Fgogg2itchintegration",
-                "end_uri_regex": r"^http://127\.0\.0\.1:7157/gogg2itchintegration#access_token=.+",
-            })
+                "start_uri": confirmation_uri,
+                "end_uri_regex": r"^(http://127\.0\.0\.1:7157/gogg2itchintegration#access_token=.+)",
+            }, js={r'^https://itch\.io/my-feed.*': [f'window.location = "{confirmation_uri}"']})
         else:
             try:
                 user = await self.get_user_data(stored_credentials["access_token"])
