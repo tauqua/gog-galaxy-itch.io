@@ -39,7 +39,7 @@ class ItchIntegration(Plugin):
     # implement methods
     async def authenticate(self, stored_credentials=None):
         logging.debug("authenticate")
-        if not (stored_credentials.get("access_token") if stored_credentials else None):
+        if not stored_credentials:
             return NextStep("web_session", {
                 "window_title": "Log in to Itch.io",
                 "window_width": 536,
@@ -48,24 +48,23 @@ class ItchIntegration(Plugin):
                 "end_uri_regex": r"^http://127\.0\.0\.1:7157/gogg2itchintegration#access_token=.+",
             })
         else:
+            self.http_client.update_cookies(stored_credentials)
             try:
-                user = await self.get_user_data(stored_credentials["access_token"])
-
-                return Authentication(user["id"], user["username"])
+                user = await self.get_user_data()
+                return Authentication(str(user.get("id")), str(user.get("username")))
             except AccessDenied:
                 raise InvalidCredentials()
 
 
-    async def pass_login_credentials(self, step: str, credentials: Dict[str, str], cookies: List[Dict[str, str]]) -> \
-            Union[NextStep, Authentication]:
+    async def pass_login_credentials(self, step, credentials, cookies):
         session_cookies = {cookie['name']: cookie['value'] for cookie in cookies if cookie['name']}
         self.http_client.update_cookies(session_cookies)
-        api_key = re.search(r"^http://127\.0\.0\.1:7157/gogg2itchintegration#access_token=(.+)", credentials["end_uri"])
-        key = api_key.group(1)
-        self.store_credentials({"access_token": key})
 
-        user = await self.get_user_data(key)
-        return Authentication(user["id"], user["username"])
+        user = await self.get_user_data()
+        logging.debug(type(id))
+        logging.debug(user.get("id"))
+        logging.debug(user.get("username"))
+        return Authentication(str(user.get("id")), str(user.get("username")))
 
     async def get_owned_games(self):
         page = 1
@@ -82,7 +81,7 @@ class ItchIntegration(Plugin):
             page += 1
         return games
 
-    async def get_user_data(self, api_key):
+    async def get_user_data(self):
         resp = await self.http_client.get(f"https://api.itch.io/profile?")
         self.authenticated = True
         return resp.get("user")
