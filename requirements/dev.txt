@@ -1,4 +1,4 @@
 -r app.txt
 pytest==6.0.*
 invoke==1.4.1
-pip-tools==5
+pip-tools==5.3.1
