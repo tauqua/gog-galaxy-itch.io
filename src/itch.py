@@ -86,15 +86,15 @@ class ItchIntegration(Plugin):
         self.authenticated = True
         return resp.get("user")
 
-    @staticmethod
-    def parse_json_into_games(resp, games):
+    def parse_json_into_games(self, resp, games):
         for key in resp:
             game = key.get("game")
             if not game.get("classification") == "game":
                 continue
             game_name = game.get("title")
-            game_num = game.get("id")
+            game_num = str(game.get("id"))
             logging.debug('Parsed %s, %s', game_name, game_num)
+            self.persistent_cache[game_num] = game
             this_game = Game(
                 game_id=game_num,
                 game_title=game_name,
@@ -102,6 +102,15 @@ class ItchIntegration(Plugin):
                 dlcs=[])
             games.append(this_game)
 
+    async def get_os_compatibility(self, game_id, context):
+        try:
+            compat = self.persistent_cache[str(game_id)].get("traits")
+            os = (OSCompatibility.Windows if "p_windows" in compat else OSCompatibility(0)) | (OSCompatibility.MacOS if "p_osx" in compat else OSCompatibility(0)) | (OSCompatibility.Linux if "p_linux" in compat else OSCompatibility(0))
+            logging.debug("Compat value: %s", os)
+            if not os == 0:
+                return os
+        except KeyError:
+            logging.error("Key not found in cache: %s", game_id)
 
 def main():
     create_and_run_plugin(ItchIntegration, sys.argv)
