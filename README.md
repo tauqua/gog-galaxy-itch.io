@@ -10,17 +10,17 @@ Note that many games on Itch are not listed in IGDB and therefore will show up a
 
 ## Current Features
 * Show all purchases in library
+* Filter by operating system
 
 ## Features planned to be added
 * Check local games
 * Install purchased games
 * Launch games
-* Read platform information
 * List designated collections as "Subscriptions" 
 * Game time tracking
 
 ## Known issues
-* Loses connection or can't connect upon restarting GOG (disconnect and reconnect to fix)
+* ~~Loses connection or can't connect upon restarting GOG (disconnect and reconnect to fix)~~ Fixed with 0.0.4
 
 ## Installation
 1. Download the plugin from the releases page.
