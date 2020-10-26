@@ -3,4 +3,4 @@
 
 # check newest API version: https://pypi.org/project/galaxy.plugin.api/
 galaxy.plugin.api==0.67.0
-aiohttp==3.6.2
+aiohttp==3.7.1
