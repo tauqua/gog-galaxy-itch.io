@@ -2,15 +2,19 @@ import json
 import logging
 from pathlib import Path
 import sys
-import re
 import os
-from typing import List, Dict, Union, Optional
+
+from typing import List
+from datetime import datetime
+import math
+import time
 
 from galaxy.api.plugin import Plugin, create_and_run_plugin
 from galaxy.api.consts import Platform, LicenseType, OSCompatibility
-from galaxy.api.types import NextStep, Authentication, Game, LicenseInfo
+from galaxy.api.types import NextStep, Authentication, Game, LicenseInfo, LocalGame
 from galaxy.api.errors import AuthenticationRequired, AccessDenied, InvalidCredentials
 
+from localClientDbReader import localClientDbReader
 from http_client import HTTPClient
 
 with open(Path(__file__).parent / 'manifest.json', 'r') as f:
@@ -32,6 +36,9 @@ class ItchIntegration(Plugin):
         )
         self.http_client = HTTPClient(self.store_credentials)
         self.session_cookie = None
+        self.myLocalClientDbReader = localClientDbReader()
+        
+        self.time_last_update = datetime.now()
 
     async def shutdown(self):
         await self.http_client.close()
@@ -112,6 +119,51 @@ class ItchIntegration(Plugin):
                 return os
         except KeyError:
             logging.error("Key not found in cache: %s", game_id)
+
+    #Pull info from the local installer database
+    def tick(self) -> None:
+        time_current = datetime.now()
+        time_delta = (time_current - self.time_last_update)
+        time_delta_seconds = time_delta.total_seconds()
+        my_rounded_delta = math.floor(time_delta_seconds/60)
+        
+        #Only run after a minute check for changes
+        if my_rounded_delta> 0:
+            self.create_task(self.myLocalClientDbReader.check_for_new_games(), "checkForNewGames")
+            #Must actually send from here
+            self.time_last_update = datetime.now()
+        
+        #On every tick pull some stuff off the queue to update
+        #my_counter = 0    
+        #while my_counter < 3: 
+        #    if not self.myLocalClientDbReader.updateQueue_remove_game.empty():
+        #        my_game_removing = self.myLocalClientDbReader.updateQueue_remove_game.get()
+        #        logging.error(my_game_removing)
+        #        self.remove_game(my_game_removing)
+        #    my_counter = my_counter+1
+        
+        #my_counter = 0    
+        #while my_counter < 3:
+        #    if not self.myLocalClientDbReader.updateQueue_add_game.empty():
+        #        my_game_sending = self.myLocalClientDbReader.updateQueue_add_game.get()
+        #        logging.error(my_game_sending)
+        #        self.add_game(my_game_sending)
+        #    my_counter = my_counter+1
+        
+        my_counter = 0    
+        while my_counter < 501 and not self.myLocalClientDbReader.my_queue_update_local_game_status.empty():    
+            my_game_update_sending = self.myLocalClientDbReader.my_queue_update_local_game_status.get()
+            logging.error(my_game_update_sending)
+            self.update_local_game_status(my_game_update_sending)
+            my_counter = my_counter+1
+                
+    async def get_local_games(self) -> List[LocalGame]:
+        logging.info("galaxy update local installed")
+        return self.myLocalClientDbReader.get_local_games()
+    
+    async def launch_game(self, game_id: str) -> None:
+        logging.info("calling local launcher")
+        await (self.myLocalClientDbReader.launch_game(game_id))
 
 def main():
     create_and_run_plugin(ItchIntegration, sys.argv)
