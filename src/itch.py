@@ -24,7 +24,6 @@ KEYS_URL = 'https://api.itch.io/profile/owned-keys?page=%s'
 
 HOMEPAGE = 'https://www.itch.io'
 
-
 class ItchIntegration(Plugin):
     def __init__(self, reader, writer, token):
         super().__init__(
@@ -75,6 +74,7 @@ class ItchIntegration(Plugin):
         return Authentication(str(user.get("id")), str(user.get("username")))
 
     async def get_owned_games(self):
+        whitelist = await load_whitelist_from_file()
         page = 1
         games = []
         while True:
@@ -85,7 +85,7 @@ class ItchIntegration(Plugin):
                 raise
             if len(resp.get("owned_keys")) == 0:
                 return games
-            self.parse_json_into_games(resp.get("owned_keys"), games)
+            self.parse_json_into_games(resp.get("owned_keys"), games, whitelist)
             page += 1
         return games
 
@@ -94,7 +94,7 @@ class ItchIntegration(Plugin):
         self.authenticated = True
         return resp.get("user")
 
-    def parse_json_into_games(self, resp, games):
+    def parse_json_into_games(self, resp, games, whitelist):
         for key in resp:
             game = key.get("game")
             if not game.get("classification") == "game":
@@ -108,7 +108,12 @@ class ItchIntegration(Plugin):
                 game_title=game_name,
                 license_info=LicenseInfo(LicenseType.SinglePurchase),
                 dlcs=[])
-            games.append(this_game)
+            # If the whitelist is populated only add the games in the whitelist, else add all games
+            if (len(whitelist) > 0):
+                if (game_name in whitelist):
+                    games.append(this_game)
+            else:
+                games.append(this_game)
 
     async def get_os_compatibility(self, game_id, context):
         try:
@@ -176,6 +181,16 @@ def log(msg):
     log = open(os.path.join(os.path.dirname(__file__), "log2.txt"), "a")
     log.write(str(msg) + "\n")
     log.close()
+    
+# load whitelisted games from file            
+async def load_whitelist_from_file():
+    ret = []
+    if (os.path.isfile(Path(__file__).parent / 'whitelist.txt')):
+        with open(Path(__file__).parent / 'whitelist.txt', 'r') as f:
+            lines = f.readlines()
+            for l in lines:
+                ret.append(l.strip())
+    return ret
 
 if __name__ == "__main__":
     main()
