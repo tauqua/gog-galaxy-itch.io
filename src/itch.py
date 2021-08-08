@@ -133,27 +133,37 @@ class ItchIntegration(Plugin):
             #Must actually send from here
             self.time_last_update = datetime.now()
         
-        #On every tick pull something off the queue to update    
-        if not self.myLocalClientDbReader.updateQueue_remove_game.empty():
-            my_game_removing = self.myLocalClientDbReader.updateQueue_remove_game.get()
-            logging.error(my_game_removing)
-            self.remove_game(my_game_removing)
+        #On every tick pull some stuff off the queue to update
+        #my_counter = 0    
+        #while my_counter < 3: 
+        #    if not self.myLocalClientDbReader.updateQueue_remove_game.empty():
+        #        my_game_removing = self.myLocalClientDbReader.updateQueue_remove_game.get()
+        #        logging.error(my_game_removing)
+        #        self.remove_game(my_game_removing)
+        #    my_counter = my_counter+1
         
-        if not self.myLocalClientDbReader.updateQueue_add_game.empty():
-            my_game_sending = self.myLocalClientDbReader.updateQueue_add_game.get()
-            logging.error(my_game_sending)
-            self.add_game(my_game_sending)
-            
-        if not self.myLocalClientDbReader.my_queue_update_local_game_status.empty():
+        #my_counter = 0    
+        #while my_counter < 3:
+        #    if not self.myLocalClientDbReader.updateQueue_add_game.empty():
+        #        my_game_sending = self.myLocalClientDbReader.updateQueue_add_game.get()
+        #        logging.error(my_game_sending)
+        #        self.add_game(my_game_sending)
+        #    my_counter = my_counter+1
+        
+        my_counter = 0    
+        while my_counter < 501 and not self.myLocalClientDbReader.my_queue_update_local_game_status.empty():    
             my_game_update_sending = self.myLocalClientDbReader.my_queue_update_local_game_status.get()
             logging.error(my_game_update_sending)
             self.update_local_game_status(my_game_update_sending)
+            my_counter = my_counter+1
                 
     async def get_local_games(self) -> List[LocalGame]:
+        logging.info("galaxy update local installed")
         return self.myLocalClientDbReader.get_local_games()
     
     async def launch_game(self, game_id: str) -> None:
-        self.myLocalClientDbReader.launch_game(game_id)
+        logging.info("calling local launcher")
+        await (self.myLocalClientDbReader.launch_game(game_id))
 
 def main():
     create_and_run_plugin(ItchIntegration, sys.argv)

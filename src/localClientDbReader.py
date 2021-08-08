@@ -85,12 +85,16 @@ class localClientDbReader():
         return local_games
 
     async def launch_game(self, game_id: str) -> None:
+        logging.debug("query db")
         self.itch_db = sqlite3.connect(ITCH_DB_PATH)
         self.itch_db_cursor = self.itch_db.cursor()
         resp = json.loads(list(self.itch_db_cursor.execute("SELECT verdict FROM caves WHERE game_id=? LIMIT 1", [game_id]))[0][0])
         self.itch_db.close()
-
+        
+        logging.info("building")
         start = int(time.time())
+        logging.info(resp["basePath"])
+        logging.info(resp["candidates"][0]["path"])
         proc = await asyncio.create_subprocess_shell(os.path.join(resp["basePath"], resp["candidates"][0]["path"]))
 
         await proc.communicate() # wait till terminates
