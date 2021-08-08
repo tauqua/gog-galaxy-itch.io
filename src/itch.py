@@ -5,6 +5,8 @@ import sys
 import os
 
 from typing import List
+from datetime import datetime
+import math
 
 from galaxy.api.plugin import Plugin, create_and_run_plugin
 from galaxy.api.consts import Platform, LicenseType, OSCompatibility
@@ -34,6 +36,8 @@ class ItchIntegration(Plugin):
         self.http_client = HTTPClient(self.store_credentials)
         self.session_cookie = None
         self.myLocalClientDbReader = localClientDbReader()
+        
+        self.time_last_update = datetime.now()
 
     async def shutdown(self):
         await self.http_client.close()
@@ -117,7 +121,26 @@ class ItchIntegration(Plugin):
 
     #Pull info from the local installer database
     def tick(self) -> None:
-        self.create_task(self.myLocalClientDbReader.check_for_new_games(), "checkForNewGames")
+        time_current = datetime.now()
+        time_delta = (time_current - self.time_last_update)
+        time_delta_seconds = time_delta.total_seconds()
+        my_rounded_delta = math.floor(time_delta_seconds/60)
+        
+        #Only run after a minute
+        if my_rounded_delta> 0:
+            self.create_task(self.myLocalClientDbReader.check_for_new_games(), "checkForNewGames")
+            #Must actually send from here
+            while not self.myLocalClientDbReader.updateQueue_remove_game.empty():
+                my_game_sending = self.myLocalClientDbReader.updateQueue_remove_game.get()
+                logging.error(my_game_sending)
+                self.remove_game(my_game_sending)
+                
+            while not self.myLocalClientDbReader.updateQueue_add_game.empty():
+                my_game_sending = self.myLocalClientDbReader.updateQueue_add_game.get()
+                logging.error(my_game_sending)
+                self.add_game(my_game_sending)
+            self.time_last_update = datetime.now()
+        
     
     async def get_local_games(self) -> List[LocalGame]:
         return self.myLocalClientDbReader.get_local_games()

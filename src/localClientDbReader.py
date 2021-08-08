@@ -5,14 +5,11 @@ import os
 import sqlite3
 import sys
 import time
-import re
-from typing import List, Dict, Union, Optional
+import queue
+from typing import List, Optional
 
-from galaxy.http import create_client_session
-
-from galaxy.api.errors import AccessDenied, InvalidCredentials
-from galaxy.api.consts import Platform, LicenseType, LocalGameState
-from galaxy.api.types import NextStep, Authentication, LocalGame, Game, LicenseInfo, GameTime
+from galaxy.api.consts import LicenseType, LocalGameState
+from galaxy.api.types import LocalGame, Game, LicenseInfo, GameTime
 
 if sys.platform.startswith("darwin"):
     ITCH_DB_PATH = os.path.expanduser("~/Library/Application Support/itch/db/butler.db")
@@ -50,52 +47,32 @@ class localClientDbReader():
             games.append(Game(game_id=game[0], game_title=game[2], dlcs=None, license_info=LicenseInfo(license_type)))
             logging.debug(f"Built {game[0]} ({game[2]})")
 
-        self.game_ids = [x.game_id for x in games]
+        self.mylocal_game_ids = [x.game_id for x in games]
 
         logging.debug("Finished building games")
 
         return games
 
-    async def get_user_data(self, api_key):
-        resp = await self._session.request("GET", f"https://itch.io/api/1/{api_key}/me")
-        data = await resp.json()
-        self.authenticated = True
-        return data.get("user")
-
-    async def pass_login_credentials(self, step: str, credentials: Dict[str, str], cookies: List[Dict[str, str]]) -> \
-            Union[NextStep, Authentication]:
-        api_key = re.search(r"^http://127\.0\.0\.1:7157/gogg2itchmatcher#access_token=(.+)", credentials["end_uri"])
-        key = api_key.group(1)
-        logging.info(key)
-        self.store_credentials({"access_token": key})
-
-        user = await self.get_user_data(key)
-
-        return Authentication(user["id"], user["username"])
 
     async def check_for_new_games(self):
         logging.debug("Checking for changes in the itch butler.db")
         self.checking_for_new_games = True
-        games_before = self.game_ids[:]
+        games_before = self.mylocal_game_ids[:]
         games_after = await self.get_games()
         ids_after = [x.game_id for x in games_after]
         for game in games_after:
             if game.game_id not in games_before:
-                self.add_game(game)
+                self.updateQueue_add_game.put(game)
                 logging.debug(f"Game {game.game_id} ({game.game_title}) is new, adding to galaxy...")
 
         for game in games_before:
             if game not in ids_after:
-                self.remove_game(game)
+                self.updateQueue_remove_game.put(game)
                 logging.debug(f"Game {game} seems to be uninstalled, removing from galaxy...")
 
         self.checking_for_new_games = False
 
         logging.debug("Finished checking for changes in the itch butler.db")
-
-
-    def tick(self) -> None:
-        self.create_task(self.check_for_new_games(), "checkForNewGames")
 
     async def get_local_games(self) -> List[LocalGame]:
         # all available games are installed, so we convert the Game list to a LocalGame list
@@ -162,28 +139,10 @@ class localClientDbReader():
 
         self.checking_for_new_games = False
 
-        self.game_ids = []
-
-    # implement methods
-    async def authenticate(self, stored_credentials=None):
-        if not (stored_credentials.get("access_token") if stored_credentials else None):
-            return NextStep("web_session", {
-                "window_title": "Log in to Itch.io",
-                "window_width": 536,
-                "window_height": 675,
-                "start_uri": r"https://itch.io/user/oauth?client_id=9a47359f7cba449ace3ba257cfeebc17&scope=profile&response_type=token&redirect_uri=http%3A%2F%2F127.0.0.1%3A7157%2Fgogg2itchmatcher",
-                "end_uri_regex": r"^http://127\.0\.0\.1:7157/gogg2itchmatcher#access_token=.+",
-            })
-        else:
-            try:
-                user = await self.get_user_data(stored_credentials["access_token"])
-
-                return Authentication(user["id"], user["username"])
-            except AccessDenied:
-                raise InvalidCredentials()
-
-
-
+        self.mylocal_game_ids = []
+        
+        self.updateQueue_add_game = queue.Queue()
+        self.updateQueue_remove_game = queue.Queue()
 
 # run plugin event loop
 
