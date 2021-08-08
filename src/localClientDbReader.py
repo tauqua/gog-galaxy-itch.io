@@ -154,15 +154,7 @@ class localClientDbReader():
     async def uninstall_game(self, game_id: str) -> None:
         pass
 
-    def __init__(self, reader, writer, token):
-        super().__init__(
-            Platform.ItchIo,  # Choose platform from available list
-            "0.1",  # Version
-            reader,
-            writer,
-            token
-        )
-        self._session = create_client_session()
+    def __init__(self):
         self.authenticated = False
 
         self.itch_db = None
