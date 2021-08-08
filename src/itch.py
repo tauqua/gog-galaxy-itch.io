@@ -11,8 +11,8 @@ from galaxy.api.consts import Platform, LicenseType, OSCompatibility
 from galaxy.api.types import NextStep, Authentication, Game, LicenseInfo, LocalGame
 from galaxy.api.errors import AuthenticationRequired, AccessDenied, InvalidCredentials
 
-from src.localClientDbReader import localClientDbReader
-from src.http_client import HTTPClient
+from localClientDbReader import localClientDbReader
+from http_client import HTTPClient
 
 with open(Path(__file__).parent / 'manifest.json', 'r') as f:
     __version__ = json.load(f)['version']
