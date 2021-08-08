@@ -11,11 +11,11 @@ Note that many games on Itch are not listed in IGDB and therefore will show up a
 ## Current Features
 * Show all purchases in library
 * Filter by operating system
+* Check local games
+* Launch games
 
 ## Features planned to be added
-* Check local games
 * Install purchased games
-* Launch games
 * List designated collections as "Subscriptions" 
 * Game time tracking
 
