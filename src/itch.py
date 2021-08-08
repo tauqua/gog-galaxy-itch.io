@@ -2,16 +2,17 @@ import json
 import logging
 from pathlib import Path
 import sys
-import re
 import os
-from typing import List, Dict, Union, Optional
+
+from typing import List
 
 from galaxy.api.plugin import Plugin, create_and_run_plugin
 from galaxy.api.consts import Platform, LicenseType, OSCompatibility
-from galaxy.api.types import NextStep, Authentication, Game, LicenseInfo
+from galaxy.api.types import NextStep, Authentication, Game, LicenseInfo, LocalGame
 from galaxy.api.errors import AuthenticationRequired, AccessDenied, InvalidCredentials
 
-from http_client import HTTPClient
+from src.localClientDbReader import localClientDbReader
+from src.http_client import HTTPClient
 
 with open(Path(__file__).parent / 'manifest.json', 'r') as f:
     __version__ = json.load(f)['version']
@@ -32,6 +33,7 @@ class ItchIntegration(Plugin):
         )
         self.http_client = HTTPClient(self.store_credentials)
         self.session_cookie = None
+        self.myLocalClientDbReader = localClientDbReader()
 
     async def shutdown(self):
         await self.http_client.close()
@@ -112,6 +114,16 @@ class ItchIntegration(Plugin):
                 return os
         except KeyError:
             logging.error("Key not found in cache: %s", game_id)
+
+    #Pull info from the local installer database
+    def tick(self) -> None:
+        self.create_task(self.myLocalClientDbReader.check_for_new_games(), "checkForNewGames")
+    
+    async def get_local_games(self) -> List[LocalGame]:
+        return self.myLocalClientDbReader.get_local_games()
+    
+    async def launch_game(self, game_id: str) -> None:
+        self.myLocalClientDbReader.launch_game(game_id)
 
 def main():
     create_and_run_plugin(ItchIntegration, sys.argv)
