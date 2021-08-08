@@ -75,6 +75,7 @@ class ItchIntegration(Plugin):
 
     async def get_owned_games(self):
         whitelist = await load_whitelist_from_file()
+        collection_ids = await load_collections_from_file()
         page = 1
         games = []
         while True:
@@ -87,6 +88,21 @@ class ItchIntegration(Plugin):
                 return games
             self.parse_json_into_games(resp.get("owned_keys"), games, whitelist)
             page += 1
+
+        #Sloppy, clean up
+        for cid in collection_ids:
+            page = 1
+            while True:
+                try:
+                    resp = await self.http_client.get(f"https://api.itch.io/collections/{cid}/collection-games?classification=game&page={page}")
+                except AuthenticationRequired:
+                    self.lost_authentication
+                    raise
+                if len(resp.get("collection_games")) == 0:
+                    break
+                self.parse_json_into_games(resp.get("collection_games"), games)
+                logging.debug("Collection page")
+                page += 1
         return games
 
     async def get_user_data(self):
@@ -108,12 +124,13 @@ class ItchIntegration(Plugin):
                 game_title=game_name,
                 license_info=LicenseInfo(LicenseType.SinglePurchase),
                 dlcs=[])
-            # If the whitelist is populated only add the games in the whitelist, else add all games
-            if (len(whitelist) > 0):
-                if (game_name in whitelist):
+            if not this_game in games:
+                # If the whitelist is populated only add the games in the whitelist, else add all games
+                if (len(whitelist) > 0):
+                    if (game_name in whitelist):
+                        games.append(this_game)
+                else:
                     games.append(this_game)
-            else:
-                games.append(this_game)
 
     async def get_os_compatibility(self, game_id, context):
         try:
@@ -187,6 +204,15 @@ async def load_whitelist_from_file():
     ret = []
     if (os.path.isfile(Path(__file__).parent / 'whitelist.txt')):
         with open(Path(__file__).parent / 'whitelist.txt', 'r') as f:
+            lines = f.readlines()
+            for l in lines:
+                ret.append(l.strip())
+    return ret
+
+async def load_collections_from_file():
+    ret = []
+    if (os.path.isfile(Path(__file__).parent / 'collections.txt')):
+        with open(Path(__file__).parent / 'collections.txt', 'r') as f:
             lines = f.readlines()
             for l in lines:
                 ret.append(l.strip())
