@@ -7,6 +7,7 @@ import os
 from typing import List
 from datetime import datetime
 import math
+import time
 
 from galaxy.api.plugin import Plugin, create_and_run_plugin
 from galaxy.api.consts import Platform, LicenseType, OSCompatibility
@@ -126,22 +127,28 @@ class ItchIntegration(Plugin):
         time_delta_seconds = time_delta.total_seconds()
         my_rounded_delta = math.floor(time_delta_seconds/60)
         
-        #Only run after a minute
+        #Only run after a minute check for changes
         if my_rounded_delta> 0:
             self.create_task(self.myLocalClientDbReader.check_for_new_games(), "checkForNewGames")
             #Must actually send from here
-            while not self.myLocalClientDbReader.updateQueue_remove_game.empty():
-                my_game_sending = self.myLocalClientDbReader.updateQueue_remove_game.get()
-                logging.error(my_game_sending)
-                self.remove_game(my_game_sending)
-                
-            while not self.myLocalClientDbReader.updateQueue_add_game.empty():
-                my_game_sending = self.myLocalClientDbReader.updateQueue_add_game.get()
-                logging.error(my_game_sending)
-                self.add_game(my_game_sending)
             self.time_last_update = datetime.now()
         
-    
+        #On every tick pull something off the queue to update    
+        if not self.myLocalClientDbReader.updateQueue_remove_game.empty():
+            my_game_removing = self.myLocalClientDbReader.updateQueue_remove_game.get()
+            logging.error(my_game_removing)
+            self.remove_game(my_game_removing)
+        
+        if not self.myLocalClientDbReader.updateQueue_add_game.empty():
+            my_game_sending = self.myLocalClientDbReader.updateQueue_add_game.get()
+            logging.error(my_game_sending)
+            self.add_game(my_game_sending)
+            
+        if not self.myLocalClientDbReader.my_queue_update_local_game_status.empty():
+            my_game_update_sending = self.myLocalClientDbReader.my_queue_update_local_game_status.get()
+            logging.error(my_game_update_sending)
+            self.update_local_game_status(my_game_update_sending)
+                
     async def get_local_games(self) -> List[LocalGame]:
         return self.myLocalClientDbReader.get_local_games()
     

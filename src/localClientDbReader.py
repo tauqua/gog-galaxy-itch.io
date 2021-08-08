@@ -63,6 +63,7 @@ class localClientDbReader():
         for game in games_after:
             if game.game_id not in games_before:
                 self.updateQueue_add_game.put(game)
+                self.my_queue_update_local_game_status.put(LocalGame(game_id=game.game_id, local_game_state=LocalGameState.Installed))
                 logging.debug(f"Game {game.game_id} ({game.game_title}) is new, adding to galaxy...")
 
         for game in games_before:
@@ -143,6 +144,7 @@ class localClientDbReader():
         
         self.updateQueue_add_game = queue.Queue()
         self.updateQueue_remove_game = queue.Queue()
+        self.my_queue_update_local_game_status = queue.Queue()
 
 # run plugin event loop
 
