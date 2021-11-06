@@ -155,8 +155,9 @@ class ItchIntegration(Plugin):
         #        self.add_game(my_game_sending)
         #    my_counter = my_counter+1
         
+        my_mod_delta = math.floor(time_delta_seconds/7)
         my_counter = 0    
-        while my_counter < 501 and not self.myLocalClientDbReader.my_queue_update_local_game_status.empty():    
+        while my_mod_delta > 0 and my_counter < 101 and not self.myLocalClientDbReader.my_queue_update_local_game_status.empty():    
             my_game_update_sending = self.myLocalClientDbReader.my_queue_update_local_game_status.get()
             logging.error(my_game_update_sending)
             self.update_local_game_status(my_game_update_sending)
