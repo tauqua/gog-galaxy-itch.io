@@ -1,0 +1,79 @@
+name: Python package
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        # Semantic version range syntax or exact version of a Python version
+        python-version: '3.7' 
+        # Optional - x64 or x86 architecture, defaults to x64
+        architecture: 'x86' 
+    # You can test your matrix by printing the current Python version
+    - name: Display Python version
+      run: python -c "import sys; print(sys.version)"
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        py  -3.7-32 -m pip install --upgrade pip
+        py  -3.7-32 -m pip install -r requirements/dev.txt
+        py  -3.7-32 -m pip install -r requirements/dev.txt --target ./src/
+    #- name: Lint with flake8
+    #  run: |
+    #    # stop the build if there are Python syntax errors or undefined names
+    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test and create code coverage
+      shell: cmd
+      run: coverage.bat
+    #- name: Zip Release
+    #  uses: TheDoctor0/zip-release@v0.3.0
+    #  with:
+        # Filename for archive
+    #    filename: importer_97543122-7785-4444-2254-711233556699.zip
+        # Base path for archive files
+    #    path: .
+        # Working directory before zipping
+    #    directory: .
+    - name: Create zip archive
+      shell: bash
+      env:
+        ZIP_NAME: itch_v0.0.5
+      run: |
+        7z a ${ZIP_NAME}.zip ./src/*
+    - name: Upload result
+      uses: actions/upload-artifact@v1
+      with:
+        name: gog-galaxy-itch.io_ ${{ github.sha }}
+        path: itch_v0.0.5.zip
+    - name: Automatic Releases
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        # GitHub secret token
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        # Git tag (for automatic releases)
+        automatic_release_tag: Prototype_${{ github.sha }}
+        # Should this release be marked as a pre-release?
+        prerelease: True
+        # Release title (for automatic releases)
+        title: Prototype_${{ github.sha }}
+        # Assets to upload to the release
+        files: itch_v0.0.5.zip
