@@ -95,9 +95,11 @@ class localClientDbReader():
         start = int(time.time())
         logging.info(resp["basePath"])
         logging.info(resp["candidates"][0]["path"])
+        my_full_path=os.path.join(resp["basePath"], resp["candidates"][0]["path"])
+        my_base_path=os.path.split(my_full_path)[0]
         #proc = await os.system("%windir%\\Sysnative\\cmd.exe /c \""+os.path.join(resp["basePath"], resp["candidates"][0]["path"])+"\"")
         #proc = await asyncio.create_subprocess_shell("%windir%\\Sysnative\\cmd.exe /c \""+os.1path.join(resp["basePath"], resp["candidates"][0]["path"])+"\"")
-        my_command = "%windir%\\Sysnative\\cmd.exe /c \"cd /d \""+os.path.join(resp["basePath"]+"\" && \""+os.path.join(resp["basePath"], resp["candidates"][0]["path"])+"\"\"")
+        my_command = "%windir%\\Sysnative\\cmd.exe /c \"cd /d \""+my_base_path+"\" && \""+my_full_path+"\"\""
         logging.info(my_command)
         proc = await asyncio.create_subprocess_shell(
             my_command
