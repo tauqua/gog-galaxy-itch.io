@@ -2,9 +2,9 @@ name: Python package
 
 on:
   push:
-    branches: [ readlocal ]
+    branches: [ readlocal,master ]
   pull_request:
-    branches: [ readlocal ]
+    branches: [ readlocal,master ]
 
 jobs:
   build:
