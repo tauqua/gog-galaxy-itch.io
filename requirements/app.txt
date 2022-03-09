@@ -2,5 +2,5 @@
 # make sure they are installable on all systems your plugin should support
 
 # check newest API version: https://pypi.org/project/galaxy.plugin.api/
-galaxy.plugin.api==0.68
+galaxy.plugin.api==0.69
 aiohttp==3.8.1
