@@ -38,6 +38,7 @@ class ItchIntegration(Plugin):
         self.myLocalClientDbReader = localClientDbReader()
         
         self.time_last_update = datetime.now()
+        self.my_handshook=False
 
     async def shutdown(self):
         await self.http_client.close()
@@ -72,6 +73,10 @@ class ItchIntegration(Plugin):
         logging.debug(user.get("id"))
         logging.debug(user.get("username"))
         return Authentication(str(user.get("id")), str(user.get("username")))
+
+    def handshake_complete(self):
+        logging.info("Handshake complete")
+        self.my_handshook=True
 
     async def get_owned_games(self):
         whitelist = await load_whitelist_from_file()
@@ -154,14 +159,15 @@ class ItchIntegration(Plugin):
         #        logging.error(my_game_sending)
         #        self.add_game(my_game_sending)
         #    my_counter = my_counter+1
-        
-        my_mod_delta = math.floor(time_delta_seconds/7)
-        my_counter = 0    
-        while my_mod_delta > 0 and my_counter < 101 and not self.myLocalClientDbReader.my_queue_update_local_game_status.empty():    
-            my_game_update_sending = self.myLocalClientDbReader.my_queue_update_local_game_status.get()
-            logging.error(my_game_update_sending)
-            self.update_local_game_status(my_game_update_sending)
-            my_counter = my_counter+1
+        #make sure to only send updates after handshake is completed
+        if (self.my_handshook):
+            my_mod_delta = math.floor(time_delta_seconds/7)
+            my_counter = 0    
+            while my_mod_delta > 0 and my_counter < 101 and not self.myLocalClientDbReader.my_queue_update_local_game_status.empty():    
+                my_game_update_sending = self.myLocalClientDbReader.my_queue_update_local_game_status.get()
+                logging.error(my_game_update_sending)
+                self.update_local_game_status(my_game_update_sending)
+                my_counter = my_counter+1
                 
     async def get_local_games(self) -> List[LocalGame]:
         logging.info("galaxy update local installed")
