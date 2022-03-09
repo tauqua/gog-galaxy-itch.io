@@ -56,14 +56,14 @@ jobs:
     - name: Create zip archive
       shell: bash
       env:
-        ZIP_NAME: itch_v0.0.5
+        ZIP_NAME: itch_v0.0.6
       run: |
         7z a ${ZIP_NAME}.zip ./src/*
     - name: Upload result
       uses: actions/upload-artifact@v1
       with:
         name: gog-galaxy-itch.io_ ${{ github.sha }}
-        path: itch_v0.0.5.zip
+        path: itch_v0.0.6.zip
     - name: Automatic Releases
       uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -76,4 +76,4 @@ jobs:
         # Release title (for automatic releases)
         title: Prototype_${{ github.sha }}
         # Assets to upload to the release
-        files: itch_v0.0.5.zip
+        files: itch_v0.0.6.zip
